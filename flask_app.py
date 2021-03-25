@@ -8,7 +8,7 @@ def index():
     return render_template("index.html")
 
 
-@application.route("/university/", methods=["GET", "POST"])
+@application.route("/university", methods=["GET", "POST"])
 def university():
     if request.method == "GET":
         return render_template("university.html")
@@ -18,9 +18,9 @@ def university():
         latv = request.form["latvian_language"]
         foreign = request.form["foreign_language"]
         if int(math) >= 40 and int(latv) >= 40 and int(foreign) >= 40:
-            result = name + " var iesniegt dokumentus augstskolā"
+            result = name + " var pieteities augstskolā"
         else:
-            result = name + " nevar sniegt dokumentus augstskolā, jo nav nepieciešamais punktu skaits"
+            result = name + " nevar pieteikties augstskolā, jo nav nepieciešamais punktu skaits"
 
         return result
 
