@@ -1,5 +1,6 @@
 from wsgiref import simple_server
 import string
+from urllib.parse import parse_qs
 
 
 def load_template(name):
@@ -9,15 +10,33 @@ def load_template(name):
 
 
 class Request:
-    def __init__(self, path, data):
+    def __init__(self, path, data, method):
         self.path = path
         self.data = data
+        self.method = method
+
+
+def read_request_body(environment):
+    try:
+        request_body_size = int(environment.get("CONTENT_LENGTH", 0))
+    except ValueError:
+        request_body_size = 0
+    request_body = environment["wsgi.input"].read(request_body_size)
+    return request_body.decode()
+
+
+def parse_request_body(request_body):
+    parsed = parse_qs(request_body)
+    return dict(parsed)
 
 
 def load_requests(environment):
+    request_body = read_request_body(environment=environment)
+    parsed_body = parse_request_body(request_body=request_body)
     request = Request(
         path=environment["PATH_INFO"],
-        data={},
+        data=parsed_body,
+        method=environment["REQUEST_METHOD"]
     )
     return request
 
@@ -35,16 +54,38 @@ class Application:
         request = load_requests(environment=environment)
         handler = self.routes[request.path]
         start_response(status, headers)
-        return handler()
+        return handler(request=request)
 
 
-def index():
+def index(request):
     response = load_template("index.html")
     return [response.substitute().encode()]
 
 
+def university(request):
+    if request.method == "GET":
+        response = load_template("university.html")
+        return [response.substitute().encode()]
+    elif request.method == "POST":
+        name = request.data["full_name"][0]
+        mathematic = int(request.data["mathematic"][0])
+        latvian_language = int(request.data["latvian_language"][0])
+        foreign_language = int(request.data["foreign_language"][0])
+
+        if mathematic >= 40 and latvian_language >= 40 and foreign_language >= 40:
+            result = name + " var pieteikties augstskolā"
+        else:
+            result = name + " nevar pieteikties augstskolā"
+
+        response = load_template("university_response.html")
+
+        return [response.substitute({"result": result}).encode()]
+
+
 routes = {
     "/": index,
+    "/university": university,
+    "/favicon.ico": None
 }
 
 application = Application(routes=routes)
