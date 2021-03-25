@@ -58,13 +58,13 @@ class Application:
 
 
 def index(request):
-    response = load_template("index.html")
+    response = load_template("Templates/index.html")
     return [response.substitute().encode()]
 
 
 def university(request):
     if request.method == "GET":
-        response = load_template("university.html")
+        response = load_template("Templates/university.html")
         return [response.substitute().encode()]
     elif request.method == "POST":
         name = request.data["full_name"][0]
@@ -77,7 +77,7 @@ def university(request):
         else:
             result = name + " nevar pieteikties augstskolā"
 
-        response = load_template("university_response.html")
+        response = load_template("Templates/university_response.html")
 
         return [response.substitute({"result": result}).encode()]
 
@@ -91,7 +91,7 @@ routes = {
 application = Application(routes=routes)
 
 HOST = "127.0.0.1"
-PORT = 8000
+PORT = 5000
 
 with simple_server.make_server(
         host=HOST,
